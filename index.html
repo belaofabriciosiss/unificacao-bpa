@@ -10,6 +10,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- VERCEL ANALYTICS (ADICIONADO) -->
+    <script type="module">
+        import { inject } from 'https://cdn.jsdelivr.net/npm/@vercel/analytics/+esm';
+        inject();
+    </script>
+
     <style>
         .drop-zone {
             transition: all 0.3s ease;
@@ -22,6 +29,7 @@
         pre { font-family: 'Fira Code', monospace; }
         .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; }
     </style>
+    
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 font-sans flex flex-col">
 
@@ -600,4 +608,5 @@
     </script>
 </body>
 </html>
+
 
