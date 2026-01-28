@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boletim de Produção Ambulatorial BPA - Unificador e Relatórios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Bibliotecas para Exportação -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        .drop-zone {
+            transition: all 0.3s ease;
+            border: 2px dashed #cbd5e1;
+        }
+        .drop-zone.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        pre { font-family: 'Fira Code', monospace; }
+        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans flex flex-col">
+
+    <div class="max-w-5xl mx-auto py-8 px-4 flex-grow w-full">
+        <header class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-slate-900">Boletim de Produção Ambulatorial BPA</h1>
+            <p class="text-slate-600 mt-1">Unificador e Relatório Consolidado de Faturamento</p>
+        </header>
+
+        <!-- Navegação por Abas -->
+        <div class="flex border-b border-slate-200 mb-6">
+            <button onclick="switchTab('unificador')" id="tabUnificador" class="px-6 py-2 font-medium text-slate-500 hover:text-blue-600 transition-colors tab-active">
+                Unificador de Arquivos
+            </button>
+            <button onclick="switchTab('relatorio')" id="tabRelatorio" class="px-6 py-2 font-medium text-slate-500 hover:text-blue-600 transition-colors">
+                Relatório de Faturamento
+            </button>
+        </div>
+
+        <!-- SEÇÃO: UNIFICADOR -->
+        <div id="sectionUnificador" class="space-y-6">
+            <main class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+                <div class="mb-8 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Informações do Relatório RELEXP
+                    </h3>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-xs font-medium text-slate-500 uppercase tracking-wider">Secretaria de Saúde Destino</label>
+                            <input type="text" id="secDestino" placeholder="Ex: SECRETARIA MUNICIPAL DE SAUDE DE GUARULHOS" 
+                                class="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-slate-700">Arquivo Original 1 (Base)</label>
+                        <div id="dropZone1" class="drop-zone rounded-xl p-8 text-center cursor-pointer hover:bg-slate-50">
+                            <input type="file" id="fileInput1" class="hidden">
+                            <div id="info1">
+                                <svg class="w-10 h-10 mx-auto text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="C7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                <span class="text-sm text-slate-500">Arraste o primeiro arquivo</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-slate-700">Arquivo Original 2</label>
+                        <div id="dropZone2" class="drop-zone rounded-xl p-8 text-center cursor-pointer hover:bg-slate-50">
+                            <input type="file" id="fileInput2" class="hidden">
+                            <div id="info2">
+                                <svg class="w-10 h-10 mx-auto text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="C7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                <span class="text-sm text-slate-500">Arraste o segundo arquivo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center gap-4">
+                    <button id="processBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-10 rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Unificar e Gerar Pacote ZIP
+                    </button>
+                    <div id="statusMessage" class="hidden text-sm font-medium px-4 py-2 rounded-full bg-slate-100 border border-slate-200"></div>
+                    <button id="downloadBtn" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-10 rounded-lg shadow-md transition-colors">
+                        Baixar Arquivos (.ZIP)
+                    </button>
+                </div>
+            </main>
+        </div>
+
+        <!-- SEÇÃO: RELATÓRIO CONSOLIDADO -->
+        <div id="sectionRelatorio" class="hidden space-y-6">
+            <main class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+                <div class="text-center mb-6">
+                    <h2 class="text-lg font-bold text-slate-800">Relatório Consolidado de Faturamento</h2>
+                    <p class="text-sm text-slate-500">Carregue um arquivo BPA e logos para a capa do PDF.</p>
+                </div>
+
+                <!-- Configuração de Imagens para Capa PDF -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-600 uppercase">Logo Capa 1 (Esquerda)</label>
+                        <input type="file" id="logoInput1" accept="image/*" class="w-full text-xs">
+                        <div id="previewLogo1" class="h-16 w-32 border rounded bg-white hidden flex items-center justify-center overflow-hidden"></div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-600 uppercase">Logo Capa 2 (Direita)</label>
+                        <input type="file" id="logoInput2" accept="image/*" class="w-full text-xs">
+                        <div id="previewLogo2" class="h-16 w-32 border rounded bg-white hidden flex items-center justify-center overflow-hidden"></div>
+                    </div>
+                </div>
+
+                <div class="max-w-md mx-auto mb-8">
+                    <div id="dropZoneReport" class="drop-zone rounded-xl p-8 text-center cursor-pointer hover:bg-slate-50">
+                        <input type="file" id="fileInputReport" class="hidden">
+                        <div id="infoReport">
+                            <svg class="w-10 h-10 mx-auto text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2m3.222.082l.935-2.805a2 2 0 011.898-1.367h6.89a2 2 0 011.898 1.367l.935 2.805M19 17v-2a4 4 0 00-4-4h-1.056a4 4 0 00-4 4v2"></path></svg>
+                            <span class="text-sm text-slate-500">Arraste o arquivo BPA unificado</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reportContainer" class="hidden space-y-6">
+                    <!-- Informações Gerais -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
+                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                <p class="text-[10px] text-slate-500 uppercase font-bold">CNES</p>
+                                <p id="repCNES" class="text-md font-mono text-blue-700 font-bold">-</p>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                <p class="text-[10px] text-slate-500 uppercase font-bold">Competência</p>
+                                <p id="repComp" class="text-md font-mono text-blue-700 font-bold">-</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Botões de Exportação -->
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="exportReport('xlsx')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow transition-colors flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM7 13h10v2H7v-2zm0-3h10v2H7v-2zm0 6h10v2H7v-2z"/></svg>
+                                EXCEL (.xlsx)
+                            </button>
+                            <button onclick="exportReport('pdf')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow transition-colors flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM7 13h10v2H7v-2zm0-3h10v2H7v-2zm0 6h10v2H7v-2z"/></svg>
+                                PDF (.pdf)
+                            </button>
+                            <button onclick="exportReport('txt')" class="bg-slate-600 hover:bg-slate-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow transition-colors flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM7 13h10v2H7v-2zm0-3h10v2H7v-2zm0 6h10v2H7v-2z"/></svg>
+                                TXT (.txt)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabelas de Procedimentos -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- BPA-C -->
+                        <div>
+                            <h3 class="font-bold text-slate-700 mb-2 border-l-4 border-amber-500 pl-2">Produção BPA-C</h3>
+                            <div class="bg-white border border-slate-200 rounded-lg overflow-hidden max-h-[400px] overflow-y-auto">
+                                <table id="tableBPA_C" class="w-full text-sm text-left">
+                                    <thead class="bg-slate-50 border-b border-slate-200 sticky top-0">
+                                        <tr>
+                                            <th class="px-4 py-2">Procedimento</th>
+                                            <th class="px-4 py-2 text-right">Quantidade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyBPA_C"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- BPA-I -->
+                        <div>
+                            <h3 class="font-bold text-slate-700 mb-2 border-l-4 border-emerald-500 pl-2">Produção BPA-I</h3>
+                            <div class="bg-white border border-slate-200 rounded-lg overflow-hidden max-h-[400px] overflow-y-auto">
+                                <table id="tableBPA_I" class="w-full text-sm text-left">
+                                    <thead class="bg-slate-50 border-b border-slate-200 sticky top-0">
+                                        <tr>
+                                            <th class="px-4 py-2">Procedimento</th>
+                                            <th class="px-4 py-2 text-right">Quantidade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyBPA_I"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- PRÉVIA GERAL (Comum) -->
+        <section id="previewSection" class="mt-10 hidden">
+            <div class="flex justify-between items-end mb-4">
+                <h2 class="text-lg font-bold text-slate-800">Visualização Técnica</h2>
+                <span id="statSummary" class="text-xs text-slate-500"></span>
+            </div>
+            <div class="bg-slate-900 text-slate-300 p-6 rounded-lg overflow-x-auto text-[10px] leading-tight font-mono max-h-96 border border-slate-700">
+                <pre id="resultPreview"></pre>
+            </div>
+        </section>
+    </div>
+
+    <!-- RODAPÉ PERSONALIZADO -->
+    <footer class="text-center py-6 text-slate-400 text-xs border-t border-slate-200 mt-12 bg-white">
+        Desenvolvido por Fabrício Belão da Costa.
+    </footer>
+
+    <script>
+        // --- Gerenciamento de Abas ---
+        function switchTab(tab) {
+            const sections = ['unificador', 'relatorio'];
+            sections.forEach(s => {
+                document.getElementById('section' + s.charAt(0).toUpperCase() + s.slice(1)).classList.add('hidden');
+                document.getElementById('tab' + s.charAt(0).toUpperCase() + s.slice(1)).classList.remove('tab-active');
+            });
+            document.getElementById('section' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
+            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('tab-active');
+            previewSection.classList.add('hidden');
+        }
+
+        // --- Elementos Comuns ---
+        const statusMessage = document.getElementById('statusMessage');
+        const resultPreview = document.getElementById('resultPreview');
+        const previewSection = document.getElementById('previewSection');
+        const statSummary = document.getElementById('statSummary');
+
+        // Variáveis de Estado para o Relatório
+        let currentReportData = {
+            cnes: "",
+            competencia: "",
+            mapC: {},
+            mapI: {}
+        };
+        // Armazenamos dados e dimensões para evitar distorção
+        let logo1 = null;
+        let logo2 = null;
+
+        // --- Lógica do Unificador ---
+        const fileInput1 = document.getElementById('fileInput1');
+        const fileInput2 = document.getElementById('fileInput2');
+        const dropZone1 = document.getElementById('dropZone1');
+        const dropZone2 = document.getElementById('dropZone2');
+        const secDestinoInput = document.getElementById('secDestino');
+        const processBtn = document.getElementById('processBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        let data1 = null, data2 = null, fileName1 = "";
+
+        setupZone(dropZone1, fileInput1, 'info1', 1);
+        setupZone(dropZone2, fileInput2, 'info2', 2);
+
+        function setupZone(zone, input, infoId, dataKey) {
+            zone.onclick = () => input.click();
+            zone.ondragover = (e) => { e.preventDefault(); zone.classList.add('dragover'); };
+            zone.ondragleave = () => zone.classList.remove('dragover');
+            zone.ondrop = (e) => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                handleFile(e.dataTransfer.files[0], infoId, dataKey);
+            };
+            input.onchange = (e) => handleFile(e.target.files[0], infoId, dataKey);
+        }
+
+        function handleFile(file, infoId, dataKey) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (dataKey === 1) { data1 = e.target.result; fileName1 = file.name; }
+                else if (dataKey === 2) data2 = e.target.result;
+                else if (dataKey === 'REPORT') processConsolidatedReport(e.target.result);
+                
+                document.getElementById(infoId).innerHTML = `
+                    <svg class="w-10 h-10 mx-auto text-emerald-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="C9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="text-sm font-medium text-slate-700">${file.name}</span>
+                `;
+                if(dataKey !== 'REPORT') checkReady();
+            };
+            reader.readAsText(file, 'ISO-8859-1');
+        }
+
+        // --- Gerenciamento de Logotipos (Com Correção de Proporção) ---
+        document.getElementById('logoInput1').onchange = (e) => readLogo(e.target.files[0], 'previewLogo1', (data) => logo1 = data);
+        document.getElementById('logoInput2').onchange = (e) => readLogo(e.target.files[0], 'previewLogo2', (data) => logo2 = data);
+
+        function readLogo(file, previewId, callback) {
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const b64 = e.target.result;
+                const img = new Image();
+                img.onload = () => {
+                    const prev = document.getElementById(previewId);
+                    prev.innerHTML = `<img src="${b64}" class="object-contain h-full w-full">`;
+                    prev.classList.remove('hidden');
+                    // Salva dados e dimensões originais
+                    callback({
+                        data: b64,
+                        w: img.width,
+                        h: img.height
+                    });
+                };
+                img.src = b64;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function checkReady() { processBtn.disabled = !(data1 && data2); }
+
+        processBtn.onclick = async () => {
+            if (!secDestinoInput.value.trim()) { showStatus('Informe a Secretaria de Saúde Destino.', 'text-amber-600'); return; }
+            try {
+                showStatus('Processando...', 'text-blue-600');
+                const p = processBPA(data1, data2);
+                const dotIdx = fileName1.lastIndexOf('.');
+                const ext = dotIdx !== -1 ? fileName1.substring(dotIdx) : '.NOV';
+                const bpaName = `PA${p.cnesBase}${ext}`;
+                const relContent = generateRELEXP(p, bpaName);
+                const zip = new JSZip();
+                zip.file(bpaName, p.content);
+                zip.file("RELEXP.PRN", relContent);
+                const zipBlob = await zip.generateAsync({type:"blob"});
+                downloadBtn.onclick = () => {
+                    const url = URL.createObjectURL(zipBlob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `UNIFICADO_PACOTE_${bpaName.split('.')[0]}.zip`;
+                    a.click();
+                };
+                downloadBtn.classList.remove('hidden');
+                showStatus(`Pronto! Arquivo unificado e RELEXP gerados.`, 'text-emerald-600');
+            } catch (error) { showStatus('Erro: ' + error.message, 'text-red-600'); }
+        };
+
+        // --- Lógica do Relatório ---
+        const dropZoneReport = document.getElementById('dropZoneReport');
+        const fileInputReport = document.getElementById('fileInputReport');
+        const reportContainer = document.getElementById('reportContainer');
+        const tbodyBPA_C = document.getElementById('tbodyBPA_C');
+        const tbodyBPA_I = document.getElementById('tbodyBPA_I');
+
+        setupZone(dropZoneReport, fileInputReport, 'infoReport', 'REPORT');
+
+        function processConsolidatedReport(content) {
+            const lines = content.split(/\r?\n/).filter(line => line.trim() !== "");
+            const header = lines.find(l => l.startsWith('01'));
+            if (!header) { showStatus('Arquivo inválido: Header (01) não encontrado.', 'text-red-600'); return; }
+
+            const compRaw = header.substring(7, 13);
+            const compText = compRaw.substring(4, 6) + '/' + compRaw.substring(0, 4);
+            
+            const firstData = lines.find(l => l.startsWith('02') || l.startsWith('03'));
+            const cnes = firstData ? firstData.substring(2, 9) : header.substring(59, 65).trim();
+
+            currentReportData = {
+                cnes,
+                competencia: compText,
+                mapC: {},
+                mapI: {}
+            };
+
+            document.getElementById('repCNES').textContent = cnes;
+            document.getElementById('repComp').textContent = compText;
+
+            lines.forEach(line => {
+                if (line.startsWith('02')) {
+                    const proc = line.substring(26, 36);
+                    const qtd = parseInt(line.substring(39, 45)) || 0;
+                    currentReportData.mapC[proc] = (currentReportData.mapC[proc] || 0) + qtd;
+                } else if (line.startsWith('03')) {
+                    const proc = line.substring(49, 59);
+                    const qtd = parseInt(line.substring(88, 94)) || 0;
+                    currentReportData.mapI[proc] = (currentReportData.mapI[proc] || 0) + qtd;
+                }
+            });
+
+            renderTable(tbodyBPA_C, currentReportData.mapC);
+            renderTable(tbodyBPA_I, currentReportData.mapI);
+            
+            reportContainer.classList.remove('hidden');
+            showStatus('Análise concluída. Selecione o formato para exportar.', 'text-emerald-600');
+        }
+
+        function renderTable(tbody, map) {
+            tbody.innerHTML = "";
+            const keys = Object.keys(map).sort();
+            if (keys.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='2' class='p-4 text-center text-slate-400 italic'>Nenhum dado encontrado</td></tr>";
+                return;
+            }
+            let sum = 0;
+            keys.forEach(k => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 hover:bg-slate-50";
+                tr.innerHTML = `<td class="px-4 py-2 font-mono">${k}</td><td class="px-4 py-2 text-right font-bold">${map[k].toLocaleString()}</td>`;
+                tbody.appendChild(tr);
+                sum += map[k];
+            });
+            const trTotal = document.createElement('tr');
+            trTotal.className = "bg-slate-100 font-bold border-t-2 border-slate-300";
+            trTotal.innerHTML = `<td class="px-4 py-2">TOTAL</td><td class="px-4 py-2 text-right">${sum.toLocaleString()}</td>`;
+            tbody.appendChild(trTotal);
+        }
+
+        // --- Funções de Exportação ---
+        function exportReport(format) {
+            const filename = `FATURAMENTO_${currentReportData.cnes}_${currentReportData.competencia.replace('/','-')}`;
+            const totalC = Object.values(currentReportData.mapC).reduce((a, b) => a + b, 0);
+            const totalI = Object.values(currentReportData.mapI).reduce((a, b) => a + b, 0);
+
+            if (format === 'txt') {
+                let content = `RELATORIO CONSOLIDADO DE FATURAMENTO POR PROCEDIMENTO\n`;
+                content += `CNES: ${currentReportData.cnes} | Competencia: ${currentReportData.competencia}\n`;
+                content += `--------------------------------------------------\n\n`;
+                content += `PRODUCAO BPA-C (CONSOLIDADO)\n`;
+                Object.keys(currentReportData.mapC).sort().forEach(k => { content += `${k}: ${currentReportData.mapC[k]}\n`; });
+                content += `TOTAL BPA-C: ${totalC}\n\nPRODUCAO BPA-I (INDIVIDUALIZADO)\n`;
+                Object.keys(currentReportData.mapI).sort().forEach(k => { content += `${k}: ${currentReportData.mapI[k]}\n`; });
+                content += `TOTAL BPA-I: ${totalI}\n`;
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = filename + ".txt"; a.click();
+            } 
+            else if (format === 'xlsx') {
+                const wb = XLSX.utils.book_new();
+                const createSheetWithHeader = (map, title, total) => {
+                    const rows = [
+                        ["RELATORIO CONSOLIDADO DE FATURAMENTO POR PROCEDIMENTO"],
+                        [`CNES: ${currentReportData.cnes}`, `Competencia: ${currentReportData.competencia}`],
+                        [`Tipo: ${title}`],
+                        [],
+                        ["Procedimento", "Quantidade"]
+                    ];
+                    Object.keys(map).sort().forEach(k => { rows.push([k, map[k]]); });
+                    rows.push(["TOTAL", total]);
+                    return XLSX.utils.aoa_to_sheet(rows);
+                };
+                XLSX.utils.book_append_sheet(wb, createSheetWithHeader(currentReportData.mapC, "BPA-C (CONSOLIDADO)", totalC), "BPA-C");
+                XLSX.utils.book_append_sheet(wb, createSheetWithHeader(currentReportData.mapI, "BPA-I (INDIVIDUALIZADO)", totalI), "BPA-I");
+                XLSX.writeFile(wb, filename + ".xlsx");
+            }
+            else if (format === 'pdf') {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // --- CAPA ---
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+
+                // Função auxiliar para redimensionar mantendo proporção
+                const getDim = (imgData, maxW, maxH) => {
+                    let ratio = Math.min(maxW / imgData.w, maxH / imgData.h);
+                    return { w: imgData.w * ratio, h: imgData.h * ratio };
+                };
+
+                // Logo Esquerda (Max 50x50)
+                if(logo1) {
+                    let d = getDim(logo1, 50, 50);
+                    doc.addImage(logo1.data, 'PNG', 20, 20, d.w, d.h);
+                }
+                // Logo Direita (Max 50x50)
+                if(logo2) {
+                    let d = getDim(logo2, 50, 50);
+                    doc.addImage(logo2.data, 'PNG', pageWidth - 20 - d.w, 20, d.w, d.h);
+                }
+
+                doc.setFontSize(22);
+                doc.setFont("helvetica", "bold");
+                const splitTitle = doc.splitTextToSize("RELATÓRIO DE PROCEDIMENTOS FATURADOS - BPA-I E BPA-C", pageWidth - 40);
+                doc.text(splitTitle, pageWidth / 2, pageHeight / 2 - 20, { align: 'center' });
+
+                doc.setFontSize(14);
+                doc.setFont("helvetica", "normal");
+                doc.text(`CNES: ${currentReportData.cnes}`, pageWidth / 2, pageHeight / 2 + 20, { align: 'center' });
+                doc.text(`Competência: ${currentReportData.competencia}`, pageWidth / 2, pageHeight / 2 + 30, { align: 'center' });
+                doc.text(`Data de Emissão: ${new Date().toLocaleDateString('pt-BR')}`, pageWidth / 2, pageHeight / 2 + 40, { align: 'center' });
+
+                // --- PÁGINA 2 EM DIANTE (DADOS) ---
+                doc.addPage();
+                doc.setFontSize(16);
+                doc.setFont("helvetica", "bold");
+                doc.text("Detalhamento de Faturamento", 14, 20);
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "normal");
+                doc.text(`CNES: ${currentReportData.cnes} | Competência: ${currentReportData.competencia}`, 14, 28);
+                
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "bold");
+                doc.text("Produção BPA-C", 14, 40);
+                const rowsC = Object.keys(currentReportData.mapC).sort().map(k => [k, currentReportData.mapC[k].toLocaleString()]);
+                rowsC.push([{content: 'TOTAL', styles: {fontStyle: 'bold'}}, {content: totalC.toLocaleString(), styles: {fontStyle: 'bold'}}]);
+                
+                doc.autoTable({
+                    startY: 42,
+                    head: [['Procedimento', 'Quantidade']],
+                    body: rowsC,
+                    theme: 'grid',
+                    headStyles: { fillColor: [245, 158, 11] }
+                });
+                
+                const finalY = doc.lastAutoTable.finalY + 10;
+                doc.text("Produção BPA-I", 14, finalY);
+                const rowsI = Object.keys(currentReportData.mapI).sort().map(k => [k, currentReportData.mapI[k].toLocaleString()]);
+                rowsI.push([{content: 'TOTAL', styles: {fontStyle: 'bold'}}, {content: totalI.toLocaleString(), styles: {fontStyle: 'bold'}}]);
+
+                doc.autoTable({
+                    startY: finalY + 2,
+                    head: [['Procedimento', 'Quantidade']],
+                    body: rowsI,
+                    theme: 'grid',
+                    headStyles: { fillColor: [16, 185, 129] }
+                });
+                
+                doc.save(filename + ".pdf");
+            }
+        }
+
+        // --- Funções Core BPA ---
+        function processBPA(c1, c2) {
+            const lines1 = c1.split(/\r?\n/).filter(line => line.trim() !== "");
+            const lines2 = c2.split(/\r?\n/).filter(line => line.trim() !== "");
+            let header = lines1.find(l => l.startsWith('01'));
+            const firstLine02 = lines1.find(l => l.startsWith('02'));
+            const cnesSigla = firstLine02.substring(2, 9); 
+            const cnesBase = cnesSigla.substring(0, cnesSigla.length - 1);
+            const raw02 = [...lines1.filter(l => l.startsWith('02')), ...lines2.filter(l => l.startsWith('02'))];
+            const groups02 = {};
+            raw02.forEach(line => {
+                const cbo = line.substring(15, 21), proc = line.substring(26, 36), idade = line.substring(36, 39);
+                const qtd = parseInt(line.substring(39, 45)) || 0;
+                const key = `${cbo}-${proc}-${idade}`;
+                if (!groups02[key]) groups02[key] = { line, qtd }; else groups02[key].qtd += qtd;
+            });
+            let cF02 = 1, cL02 = 1;
+            const processed02 = Object.values(groups02).map(item => {
+                let l = item.line.split('');
+                const sQ = String(item.qtd).padStart(6, '0'), sF = String(cF02).padStart(3, '0'), sL = String(cL02).padStart(2, '0');
+                for(let i=0; i<6; i++) l[39+i] = sQ[i];
+                for(let i=0; i<3; i++) l[21+i] = sF[i];
+                for(let i=0; i<2; i++) l[24+i] = sL[i];
+                cL02++; if (cL02 > 20) { cL02 = 1; cF02++; }
+                return l.join('');
+            });
+            const raw03 = [...lines1.filter(l => l.startsWith('03')), ...lines2.filter(l => l.startsWith('03'))];
+            raw03.sort((a, b) => a.substring(15, 30).localeCompare(b.substring(15, 30)));
+            let lastCNS = "", cF03 = 1, cL03 = 1, mF = 0;
+            const processed03 = raw03.map((line) => {
+                const cCNS = line.substring(15, 30);
+                if (lastCNS !== "" && cCNS !== lastCNS) { cF03 = 1; cL03 = 1; }
+                let l = line.split('');
+                const sF = String(cF03).padStart(3, '0'), sL = String(cL03).padStart(2, '0');
+                for(let i=0; i<3; i++) l[44+i] = sF[i];
+                for(let i=0; i<2; i++) l[47+i] = sL[i];
+                if (cF03 > mF) mF = cF03;
+                lastCNS = cCNS; cL03++; if (cL03 > 99) { cL03 = 1; cF03++; }
+                return l.join('');
+            });
+            let s1 = 0, s2 = 0;
+            processed02.forEach(l => { s1 += (parseInt(l.substring(26, 36)) || 0); s2 += (parseInt(l.substring(39, 45)) || 0); });
+            processed03.forEach(l => { s1 += (parseInt(l.substring(49, 59)) || 0); s2 += (parseInt(l.substring(88, 94)) || 0); });
+            const sFTotal = s1 + s2;
+            const ctrl = (sFTotal % 1111) + 1111;
+            const tL = 1 + processed02.length + processed03.length;
+            let nH = header.split('');
+            const sTL = String(tL).padStart(6, '0'), sMF = String(mF).padStart(6, '0'), sC = String(ctrl).padStart(4, '0');
+            for(let i=0; i<6; i++) nH[13+i] = sTL[i];
+            for(let i=0; i<6; i++) nH[19+i] = sMF[i];
+            for(let i=0; i<4; i++) nH[25+i] = sC[i];
+            return { content: [nH.join(''), ...processed02, ...processed03].join('\r\n'), compRaw: header.substring(7, 13), orgaoNome: header.substring(29, 59).trim(), cnesSigla, cnesBase, cnpj: header.substring(65, 79).trim(), totalLinhas: tL, maxFolha: mF, controle: ctrl };
+        }
+
+        function generateRELEXP(data, bpaName) {
+            const months = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
+            const comp = months[parseInt(data.compRaw.substring(4, 6)) - 1] + "/" + data.compRaw.substring(0, 4);
+            return `*******************************************************************Versao: \nMS/SAS/DATASUS/     SISTEMA DE INFORMACOES AMBULATORIAIS            DATA COMP.\n${new Date().toLocaleDateString('pt-BR')}           RELATORIO DE CONTROLE DE REMESSA                ${comp}   \n************************************************************Versao banco :    \n\n ORGAO RESPONSAVEL PELA INFORMACAO\n NOME   : ${data.orgaoNome}\n SIGLA  : ${data.cnesSigla}\n CGC/CPF: ${data.cnpj}\n\n Carimbo e\n Assinatura : ___________________\n\n SECRETARIA DE SAUDE DESTINO DOS B.P.A.(s)\n NOME  : ${secDestinoInput.value.toUpperCase()}\n ORGAO (M)UNICIPAL OU (E)STADUAL : M\n\n Setor de                                       Carimbo e\n Recebimento : ____________ Data : ___/___/___  Assinatura : ________________\n\n ARQUIVO DE BPA(s) GERADO\n               NOME : ${bpaName}\n REGISTROS GRAVADOS : ${String(data.totalLinhas).padStart(6, '0')} \n             BPA(s) : ${String(data.maxFolha).padStart(6, '0')}\n  CAMPO DE CONTROLE : ${data.controle}\n\n    (ENCERRAMENTO DO RELATORIO)`;
+        }
+
+        function showStatus(msg, colorClass) {
+            statusMessage.textContent = msg;
+            statusMessage.className = `text-sm font-medium px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm ${colorClass}`;
+            statusMessage.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
