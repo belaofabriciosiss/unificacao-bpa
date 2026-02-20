@@ -597,7 +597,7 @@
         function generateRELEXP(data, bpaName) {
             const months = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
             const comp = months[parseInt(data.compRaw.substring(4, 6)) - 1] + "/" + data.compRaw.substring(0, 4);
-            return `*******************************************************************Versao: \nMS/SAS/DATASUS/     SISTEMA DE INFORMACOES AMBULATORIAIS            DATA COMP.\n${new Date().toLocaleDateString('pt-BR')}           RELATORIO DE CONTROLE DE REMESSA                ${comp}   \n************************************************************Versao banco :    \n\n ORGAO RESPONSAVEL PELA INFORMACAO\n NOME   : ${data.orgaoNome}\n SIGLA  : ${data.cnesSigla}\n CGC/CPF: ${data.cnpj}\n\n Carimbo e\n Assinatura : ___________________\n\n SECRETARIA DE SAUDE DESTINO DOS B.P.A.(s)\n NOME  : ${secDestinoInput.value.toUpperCase()}\n ORGAO (M)UNICIPAL OU (E)STADUAL : M\n\n Setor de                                       Carimbo e\n Recebimento : ____________ Data : ___/___/___  Assinatura : ________________\n\n ARQUIVO DE BPA(s) GERADO\n               NOME : ${bpaName}\n REGISTROS GRAVADOS : ${String(data.totalLinhas).padStart(6, '0')} \n             BPA(s) : ${String(data.maxFolha).padStart(6, '0')}\n  CAMPO DE CONTROLE : ${data.controle}\n\n    (ENCERRAMENTO DO RELATORIO)`;
+            return `*******************************************************************Versao: 04.11\nMS/SAS/DATASUS/     SISTEMA DE INFORMACOES AMBULATORIAIS            DATA COMP.\n${new Date().toLocaleDateString('pt-BR')}           RELATORIO DE CONTROLE DE REMESSA                ${comp}   \n************************************************************Versao banco :    \n\n ORGAO RESPONSAVEL PELA INFORMACAO\n NOME   : ${data.orgaoNome}\n SIGLA  : ${data.cnesSigla}\n CGC/CPF: ${data.cnpj}\n\n Carimbo e\n Assinatura : ___________________\n\n SECRETARIA DE SAUDE DESTINO DOS B.P.A.(s)\n NOME  : ${secDestinoInput.value.toUpperCase()}\n ORGAO (M)UNICIPAL OU (E)STADUAL : M\n\n Setor de                                       Carimbo e\n Recebimento : ____________ Data : ___/___/___  Assinatura : ________________\n\n ARQUIVO DE BPA(s) GERADO\n               NOME : ${bpaName}\n REGISTROS GRAVADOS : ${String(data.totalLinhas).padStart(6, '0')} \n             BPA(s) : ${String(data.maxFolha).padStart(6, '0')}\n  CAMPO DE CONTROLE : ${data.controle}\n\n    (ENCERRAMENTO DO RELATORIO)`;
         }
 
         function showStatus(msg, colorClass) {
@@ -608,5 +608,6 @@
     </script>
 </body>
 </html>
+
 
 
