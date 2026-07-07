@@ -10,13 +10,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-
-    <!-- VERCEL ANALYTICS (ADICIONADO) -->
-    <script type="module">
-        import { inject } from 'https://cdn.jsdelivr.net/npm/@vercel/analytics/+esm';
-        inject();
-    </script>
-
     <style>
         .drop-zone {
             transition: all 0.3s ease;
@@ -29,14 +22,13 @@
         pre { font-family: 'Fira Code', monospace; }
         .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; }
     </style>
-    
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 font-sans flex flex-col">
 
     <div class="max-w-5xl mx-auto py-8 px-4 flex-grow w-full">
         <header class="text-center mb-6">
             <h1 class="text-3xl font-bold text-slate-900">Boletim de Produção Ambulatorial BPA</h1>
-            <p class="text-slate-600 mt-1">Boletim de Produção Ambulatorial BPA</p>
+            <p class="text-slate-600 mt-1">Unificador e Relatório Consolidado de Faturamento</p>
         </header>
 
         <!-- Navegação por Abas -->
@@ -552,8 +544,9 @@
             const groups02 = {};
             raw02.forEach(line => {
                 const cbo = line.substring(15, 21), proc = line.substring(26, 36), idade = line.substring(36, 39);
+                const competencia = line.substring(9, 15); // BPA-C: Competência nas posições 9-14 (AAAAMM)
                 const qtd = parseInt(line.substring(39, 45)) || 0;
-                const key = `${cbo}-${proc}-${idade}`;
+                const key = `${competencia}-${cbo}-${proc}-${idade}`;
                 if (!groups02[key]) groups02[key] = { line, qtd }; else groups02[key].qtd += qtd;
             });
             let cF02 = 1, cL02 = 1;
@@ -597,7 +590,7 @@
         function generateRELEXP(data, bpaName) {
             const months = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
             const comp = months[parseInt(data.compRaw.substring(4, 6)) - 1] + "/" + data.compRaw.substring(0, 4);
-            return `*******************************************************************Versao: 04.11\nMS/SAS/DATASUS/     SISTEMA DE INFORMACOES AMBULATORIAIS            DATA COMP.\n${new Date().toLocaleDateString('pt-BR')}           RELATORIO DE CONTROLE DE REMESSA                ${comp}   \n************************************************************Versao banco :    \n\n ORGAO RESPONSAVEL PELA INFORMACAO\n NOME   : ${data.orgaoNome}\n SIGLA  : ${data.cnesSigla}\n CGC/CPF: ${data.cnpj}\n\n Carimbo e\n Assinatura : ___________________\n\n SECRETARIA DE SAUDE DESTINO DOS B.P.A.(s)\n NOME  : ${secDestinoInput.value.toUpperCase()}\n ORGAO (M)UNICIPAL OU (E)STADUAL : M\n\n Setor de                                       Carimbo e\n Recebimento : ____________ Data : ___/___/___  Assinatura : ________________\n\n ARQUIVO DE BPA(s) GERADO\n               NOME : ${bpaName}\n REGISTROS GRAVADOS : ${String(data.totalLinhas).padStart(6, '0')} \n             BPA(s) : ${String(data.maxFolha).padStart(6, '0')}\n  CAMPO DE CONTROLE : ${data.controle}\n\n    (ENCERRAMENTO DO RELATORIO)`;
+            return `*******************************************************************Versao: 04.11 \nMS/SAS/DATASUS/     SISTEMA DE INFORMACOES AMBULATORIAIS            DATA COMP.\n${new Date().toLocaleDateString('pt-BR')}           RELATORIO DE CONTROLE DE REMESSA                ${comp}   \n************************************************************Versao banco :    \n\n ORGAO RESPONSAVEL PELA INFORMACAO\n NOME   : ${data.orgaoNome}\n SIGLA  : ${data.cnesSigla}\n CGC/CPF: ${data.cnpj}\n\n Carimbo e\n Assinatura : ___________________\n\n SECRETARIA DE SAUDE DESTINO DOS B.P.A.(s)\n NOME  : ${secDestinoInput.value.toUpperCase()}\n ORGAO (M)UNICIPAL OU (E)STADUAL : M\n\n Setor de                                       Carimbo e\n Recebimento : ____________ Data : ___/___/___  Assinatura : ________________\n\n ARQUIVO DE BPA(s) GERADO\n               NOME : ${bpaName}\n REGISTROS GRAVADOS : ${String(data.totalLinhas).padStart(6, '0')} \n             BPA(s) : ${String(data.maxFolha).padStart(6, '0')}\n  CAMPO DE CONTROLE : ${data.controle}\n\n    (ENCERRAMENTO DO RELATORIO)`;
         }
 
         function showStatus(msg, colorClass) {
@@ -608,6 +601,3 @@
     </script>
 </body>
 </html>
-
-
-
